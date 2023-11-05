@@ -1,0 +1,8 @@
+20:24:59.298195 [INFO] [main] Getting information from all locally connected printers
+20:24:59.2984193 [INFO] [get_all_printers] First call to EnumPrintersW to determine bytes_needed
+20:24:59.2992072 [INFO] [get_all_printers] Bytes needed: 12176
+20:24:59.299267 [INFO] [get_all_printers] Second call to EnumPrintersW to populate buffer with PRINTER_INFO_2W structs
+20:24:59.2996846 [INFO] [get_all_printers] Successfully filled buffer at 0x21919f2b0f0
+20:24:59.2997305 [INFO] [get_all_printers] Converting raw byte buffer to slice of PRINTER_INFO_2W structs
+20:24:59.299767 [INFO] [get_all_printers] Successfully created &[PRINTER_INFO_2W] slice
+20:24:59.2998315 [INFO] [main] Successfully retrieved printer information
