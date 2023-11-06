@@ -6,7 +6,6 @@ use std::process::exit;
 use std::ffi::{OsStr, CString, CStr, OsString};
 use std::os::windows::ffi::{OsStrExt, OsStringExt};
 
-
 use winapi::shared::minwindef::DWORD;
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::winspool::PRINTER_ENUM_LOCAL;
@@ -20,6 +19,7 @@ use simplelog::*;
 use time::macros::format_description;
 
 
+#[derive(Clone, Debug)]
 struct MinimalPrinterInfo {
     printer_name: OsString,
     port_name: OsString,
@@ -156,6 +156,27 @@ fn get_all_printers() -> Vec<MinimalPrinterInfo> {
     return min_printer_info;
 }
 
+fn get_wsd_printers(all_printers: &Vec<MinimalPrinterInfo>) -> Vec<MinimalPrinterInfo> {
+    if all_printers.len() == 0 {
+        warn!("[{}] Received empty set of printers", "get_wsd_printers");
+        return Vec::new();
+    }
+
+    // Filter through all_printers and select those whose ports start with WSD
+    info!("[{}] Searching through {} printers", "get_wsd_printers", all_printers.len());
+    let wsd_printers: Vec<MinimalPrinterInfo> = all_printers.iter()
+        .filter(|printer| {
+            printer.port_name.to_str()
+                .map_or(false, |s| s.starts_with("WSD"))
+        })
+        .cloned()
+        .collect();
+
+    info!("[{}] Successfully found {} WSD connected printers", "get_wsd_printers", wsd_printers.len());
+
+    return wsd_printers;
+}
+
 fn main() {
     // Initialize the logger
     let config = ConfigBuilder::new()
@@ -169,12 +190,19 @@ fn main() {
 
     if all_printers.is_empty() {
         warn!("[{}] No printers found", "main");
-        exit(1);
+        return;
     } else {
         info!("[{}] Successfully retrieved printer information", "main");
     }
 
-    for printer in all_printers {
-        println!("Name: {:?}\n  Port: {:?}\n  Driver: {:?}", printer.printer_name, printer.port_name, printer.driver_name);
+    let wsd_printers = get_wsd_printers(&all_printers);
+
+    if wsd_printers.len() == 0 {
+        warn!("[{}] No WSD connected printers found", "main");
+        return;
+    }
+
+    for printer in wsd_printers {
+        println!("Printer Name: {:?}\n Port Name: {:?}\n Driver Name: {:?}", printer.printer_name, printer.port_name, printer.driver_name);
     }
 }
